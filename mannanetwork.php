@@ -79,8 +79,7 @@ if ( strpos( get_site_url(), 'https://' ) !== false ) {
 } elseif ( strpos( get_site_url(), 'http://' ) !== false ) {
 	$http_host = str_replace( 'http://', '', get_site_url() );
 }
-//fake test ul
-//$http_host = "https://test5.manna-network.com";
+
 	$response = wp_remote_post(
 		$file,
 		array(
@@ -99,11 +98,11 @@ if ( strpos( get_site_url(), 'https://' ) !== false ) {
 
 	if ( is_wp_error( $response ) ) {
 		$error_message = esc_attr( $response->get_error_message() );
+		$config_error = "true";
 		echo 'Something went wrong 102: (' . esc_attr( $error_message ) . ' )';
 	} else {
+	$config_error = "false";
 		$mn_reg_status = esc_attr( $response['body'] ) ;
-
-//echo '<br>$config_error = ',$config_error;
 if($mn_reg_status =="empty"){
 
 include('translations/en_no_registration.php')  ;
@@ -131,8 +130,9 @@ include('translations/en_is_temp.php');
 	if ( is_wp_error( $response ) ) {
 		$error_message = esc_attr( $response->get_error_message() );
 		echo 'Something went wrong 102: (' . esc_attr( $error_message ) . ' )';
+		$config_error = "true";
 	} else {
-	//	$mn_data = esc_attr( $response['body'] ) ;
+	$config_error = "false";
 $mn_data =  $response['body']  ;
 //echo '<br> In mannanetwok.phpline 170 $response[body] from exchange.manna-network.com/incoming/check_if_registered.php =', $mn_data;
 $decode = json_decode($mn_data, true);
@@ -174,14 +174,24 @@ if ( strpos( get_site_url(), 'https://' ) !== false ) {
 	);
 
 	if ( is_wp_error( $response ) ) {
+	$config_error = "true";
 		$error_message = esc_attr( $response->get_error_message() );
 		echo 'Something went wrong 102: (' . esc_attr( $error_message ) . ' )';
 	} else {
 		//$mn_data = esc_attr( $response['body'] ) ;
+		echo '<br>$response[\'body\']  = ', $response['body'] ;
 $decode =  json_decode($response['body'], true)  ;
+if($decode !== "empty"){
+$config_error = "false";
 $local_wp_link_id =$decode['remote_lnk_num'];
 $mn_agent_id = $decode['agent_ID'];
 $mn_installer_id = $decode['installer_id'];
+}
+else
+{
+include('translations/en_no_registration.php');
+exit();
+}
 
 }
 }
@@ -249,7 +259,7 @@ span.dropt span {position: absolute; left: -9999px;
 span.dropt:hover span {margin: 20px 0 0 170px; background: #ffffff; z-index:6;} </style>
 <?php 
 $current_url = $_SERVER['REQUEST_URI'] ;
-/* if(isset($_POST[submit])){
+ if(isset($_POST['submit'])){
 //POST = Array ( [option_page] => manna_member-group [action] => update [_wpnonce] => 1347a914bb [_wp_http_referer] => /wp-admin/admin.php?page=manna-network [wp_user_id] => 202 [mn_agent_id] => 17 [mn_agent_url] => 1stbitcoinbank.com [mn_agent_folder] => manna_network [installer_id] => 1 [wp_page_name] => [submit] => Save Changes ) 
 
 if(isset($_POST['mn_local_lnk_num']) && is_numeric($_POST['mn_local_lnk_num'])){
@@ -270,7 +280,7 @@ echo '<br>POST = ';
 print_r($_POST);
 }
 else
-{ */
+{ 
 ?>
 <!--<form method="post" action="<?php echo $current_url;?>">-->
 <form method="post" action="../wp-content/plugins/manna-network/options.php">
@@ -322,6 +332,7 @@ var t = setInterval(function () {
 </div>
 	<?php
 
+}
 }
 }
 function mannanetwork_func( $atts ) {
